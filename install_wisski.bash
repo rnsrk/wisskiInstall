@@ -95,7 +95,7 @@ do
     done
     echo -e "${GREEN}Websitename: ${WEBSITENAME}${NC}"
     echo -e "${GREEN}Server admin mail: ${SERVERADMINEMAIL}${NC}"
-    echo -e "${YELLOW}Is that correct? (Y/n)"
+    echo -e "${YELLOW}Is that correct? (Y/n)${NC}"
     read SURE
     if [[ $SURE == 'y' ]] || [[ $SURE == 'Y' ]] || [[ -z $SURE ]]
     then 
@@ -200,7 +200,7 @@ do
         read USERPW
         echo -e "${GREEN}Database username: ${USER}${NC}"
         echo -e "${GREEN}Database user password: ${USERPW}${NC}"
-        echo -e "${YELLOW}Is that correct? (Y/n)"
+        echo -e "${YELLOW}Is that correct? (Y/n)${NC}"
         read SURE
         if [[ $SURE == 'y' ]] || [[ $SURE == 'Y' ]] || [[ -z $SURE ]]
         then 
