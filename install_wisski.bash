@@ -251,6 +251,9 @@ echo -e "${GREEN}Installing WissKI with some modules (you have to activate them 
 sleep 1
 cd $WEBSITENAME
 composer require drupal/colorbox drupal/devel drush/drush drupal/imagemagick drupal/inline_entity_form:^1.0@RC drupal/wisski 
+cd web/modules/contrib/wisski
+composer update
+cd /var/www/html/$WEBSITENAME
 
 echo -e "${GREEN}Get necessary libraries.${NC}"
 sleep 1
