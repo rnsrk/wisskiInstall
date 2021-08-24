@@ -250,7 +250,7 @@ composer create-project drupal/recommended-project $WEBSITENAME
 echo -e "${GREEN}Installing WissKI with some modules (you have to activate them later).${NC}"
 sleep 1
 cd $WEBSITENAME
-composer require drupal/colorbox drupal/devel drush/drush drupal/imagemagick drupal/inline_entity_form:^1.0@RC drupal/wisski 
+composer require drupal/colorbox drupal/devel drush/drush drupal/imagemagick drupal/inline_entity_form:^1.0@RC drupal/wisski:2.x-dev@dev
 cd web/modules/contrib/wisski
 composer update
 cd /var/www/html/$WEBSITENAME
