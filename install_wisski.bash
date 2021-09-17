@@ -30,7 +30,6 @@ echo -e "${GREEN}Install necessary packages.${NC}"
 sleep 1
 
 apt install apache2 \
-            composer \
             git \
             libapache2-mod-php \
             mariadb-server \
@@ -44,7 +43,6 @@ apt install apache2 \
             php7.4-zip \
             wget \
             unzip -y;
-
 
 # add php configuration via wisski.ini
 echo -e "${YELLOW}Add PHP configuration in /etc/php/7.4/cli/conf.d/wisski.ini${NC}"
@@ -249,17 +247,25 @@ sleep 1
 echo -e "${GREEN}We are ready to install Drupal! It will be installed under /var/www/html/$WEBSITENAME.${NC}"
 sleep 1
 
-cd /var/www/html/ 
-echo -e "${YELLOW}Composer will scold you for being root, ignore it, it will be taken care of later.${NC}"
-composer create-project drupal/recommended-project $WEBSITENAME
+cd /var/www/html/
 
+
+echo -e "${GREEN}Installing composer locally in /var/www/html, to avoid problems with global composer executables.${NC}"
+sleep 1
+php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
+php -r "if (hash_file('sha384', 'composer-setup.php') === '756890a4488ce9024fc62c56153228907f1545c228516cbf63f885e036d37e9a59d27d63f46af1d4d07ee0f76181c7d3') { echo 'Installer verified'; } else { echo 'Installer corrupt'; unlink('composer-setup.php'); } echo PHP_EOL;"
+php composer-setup.php --filename=composer
+php -r "unlink('composer-setup.php');"
+
+echo -e "${YELLOW}Composer will scold you for being root, ignore it, it will be taken care of later.${NC}"
+./composer create-project drupal/recommended-project $WEBSITENAME
 
 echo -e "${GREEN}Installing WissKI with some modules (you have to activate them later).${NC}"
 sleep 1
 cd /var/www/html/$WEBSITENAME
-composer require drupal/colorbox drupal/devel drush/drush drupal/imagemagick drupal/inline_entity_form:^1.0@RC drupal/wisski:^3.0@RC
+./composer require drupal/colorbox drupal/devel drush/drush drupal/imagemagick drupal/inline_entity_form:^1.0@RC drupal/wisski:^3.0@RC
 cd web/modules/contrib/wisski
-composer update
+./composer update
 cd /var/www/html/$WEBSITENAME
 
 echo -e "${GREEN}Get necessary libraries.${NC}"
@@ -271,5 +277,8 @@ mv web/libraries/colorbox-master web/libraries/colorbox
 
 chown -R www-data:www-data ../$WEBSITENAME
 chmod 775 -R ../$WEBSITENAME
+
+echo -e "${GREEN}Removing local composer executable again.${NC}"
+rm composer
 
 echo -e "${GREEN}Thats it! You can now visit http://${WEBSITENAME} and install Drupal!${NC}"
