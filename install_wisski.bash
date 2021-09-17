@@ -156,8 +156,15 @@ sleep 1
 systemctl restart apache2
 
 # run mariadb security script
-echo -e "${YELLOW}Making Mariadb secure. Please note your root credentials!${NC}"
-mysql_secure_installation;
+echo -e "${YELLOW}Do you want to secure Mariadb? (Y/n) ${NC}"
+read SECUREMARIADB
+if [[ $SECUREMARIADB == 'y' ]] || [[ $SECUREMARIADB == 'Y' ]] || [[ -z $SECUREMARIADB ]]
+then 
+    echo -e "${GREEN}Please note your credentials!${NC}"
+    sleep 2
+    mysql_secure_installation;
+fi
+
 
 # create database user and database 
 echo -e "${YELLOW}Create database and user for Drupal. Please note your inputs, they will be needed in a moment.${NC}"
