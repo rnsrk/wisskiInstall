@@ -121,14 +121,14 @@ then
             "8.0 from ppa:ondrej/php")
                 APTS+=( "php8.0" )
                 PHPVERSION="8.0"
-                echo -e "${GREEN}Add app-repo \"ppa:ondrej/php\" to your sources."
+                echo -e "${GREEN}Add app-repo \"ppa:ondrej/php\" to your sources.${NC}"
                 add-apt-repository ppa:ondrej/php -y;
                 break
                 ;;
             "7.4 from default sources")
                 APTS+=( "php7.4" )
                 PHPVERSION="7.4"
-                echo -e "${GREEN}Will take php7.4 from default sources. "
+                echo -e "${GREEN}Will take php7.4 from default sources.${NC}"
                 break
                 ;;
             "I don't know, please quit.")
