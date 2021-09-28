@@ -350,16 +350,30 @@ done
 if [[ $LOCALHOST ]]
 then
     echo
-    echo -e "${GREEN}Since, you are on localhost, I try to add \"127.0.0.1   ${WEBSITENAME}\" to /etc/hosts."
-    if grep -q "${WEBSITENAME}" "/etc/hosts";
-    then 
-        echo
-        echo -e "${RED}Entry \"127.0.0.1   ${WEBSITENAME}\" already in /etc/hosts"
-    else
-        echo
-        echo -e "${YELLOW}ADD $WEBSITENAME to /etc/hosts, because you are on a localhost!"
-        echo "127.0.0.1   ${WEBSITENAME}" >> /etc/hosts
-    fi
+    echo -e "${YELLOW}Since, you are on localhost, I try to add \"127.0.0.1   ${WEBSITENAME}\" to /etc/hosts."
+    echo -e "Is this okay for you?${NC}"
+    
+     while true; do
+        read -p "(y/n): " SURE
+        case $SURE in
+            [Yy]* )
+                if grep -q "${WEBSITENAME}" "/etc/hosts"; then 
+                    echo
+                    echo -e "${RED}Entry \"127.0.0.1   ${WEBSITENAME}\" already in /etc/hosts"
+                else
+                    echo
+                    echo -e "${YELLOW}ADD $WEBSITENAME to /etc/hosts, because you are on a localhost!"
+                    echo "127.0.0.1   ${WEBSITENAME}" >> /etc/hosts
+                fi
+                EDITEDHOSTS=true
+                break;;
+            [Nn]* )
+                echo -e "${GREEN}Okay, to visit your website later on, you have to type http://localhost/${WEBSITENAME}";
+                break;;
+            * ) echo "Please answer yes or no.";;
+        esac
+    done
+    
 fi
 
 echo
@@ -390,7 +404,7 @@ while true; do
     case $WRITECONFIG in
         [Yy]* ) 
             echo -e "${GREEN}Write config to \"/etc/apache2/sites-available/${WEBSITENAME}\"";
-            echo "$SITECONFIG" > /etc/apache2/sites-available/${WEBSITENAME}; 
+            echo "$SITECONFIG" > /etc/apache2/sites-available/${WEBSITENAME}.conf; 
             echo -e "${GREEN}Enable site ${WEBSITENAME}${NC}";
             a2ensite ${WEBSITENAME};
             echo -e "${GREEN}Restart apache server${NC}";
@@ -616,18 +630,31 @@ cd /var/www/html/$WEBSITENAME
 
 
 echo
-echo -e "${GREEN}Get necessary libraries.${NC}"
+echo -e "${YELLOW}Do you like to get colorbox and mirador libraries?${NC}"
 echo
-mkdir -p web/libraries
-## get colorbox
 
-wget https://github.com/jackmoore/colorbox/archive/refs/heads/master.zip -P web/libraries/
-unzip web/libraries/master.zip -d web/libraries/
-mv web/libraries/colorbox-master web/libraries/colorbox
-## get mirador
-
-wget http://wisskieu.nasarek.org/sites/default/files/assets/mirador.zip -P web/libraries/
-unzip web/libraries/mirador.zip -d web/libraries/
+while true; do
+        read -p "(y/n): " INSTALLCOMPOSER
+        case ${INSTALLCOMPOSER} in
+            [Yy]* )
+                mkdir -p web/libraries
+                ## get colorbox
+                wget https://github.com/jackmoore/colorbox/archive/refs/heads/master.zip -P web/libraries/
+                unzip web/libraries/master.zip -d web/libraries/
+                mv web/libraries/colorbox-master web/libraries/colorbox
+                ## get mirador
+                wget http://wisskieu.nasarek.org/sites/default/files/assets/mirador.zip -P web/libraries/
+                unzip web/libraries/mirador.zip -d web/libraries/
+                break;;
+            [Nn]* )
+                echo -e "${GREEN}Okay, you can download it later from:"
+                echo -e "https://github.com/jackmoore/colorbox/archive/refs/heads/master.zip"
+                echo -e "and"
+                echo -e "http://wisskieu.nasarek.org/sites/default/files/assets/mirador.zip${NC}"
+                break;;
+            * ) echo "Please answer y[es] or n[o].";;
+        esac
+    done
 
 #echo change permissions for webroot to www-data
 
@@ -695,6 +722,8 @@ if [[ ! ${LOCALHOST} ]]; then
 fi
 
 echo
-echo -e "${GREEN}Thats it! You can now visit http://${WEBSITENAME} and install Drupal!${NC}"
-
+if [[ ${EDITEDHOSTS} ]]; then
+    echo -e "${GREEN}Thats it! You can now visit http://${WEBSITENAME} or and install Drupal!${NC}"
+else
+    echo -e "${GREEN}Thats it! You can now visit http://localhost/${WEBSITENAME} or and install Drupal!${NC}"
 exit 0;
