@@ -6,6 +6,9 @@ YELLOW='\033[1;33m'
 RED='\033[0;31m'
 NC='\033[0m'
 
+
+CURRENTDIR=$PWD
+
 # Check if executer is root
 if [ "$EUID" -ne 0 ]; then 
     echo -e "${RED}Please run as root: \"sudo ./install_drupal-wisski.bash\""
@@ -30,7 +33,8 @@ do
     case $opt in
         "for local development.")
             LOCALHOST=true
-            echo -e "${GREEN} Okay, will add website name to /etc/hosts later."
+            echo
+            echo -e "${GREEN}Okay, will may add website name to /etc/hosts later."
             break
             ;;
         "for production.")
@@ -293,7 +297,7 @@ do
 done
 
 
-cp ./.remove-site ./remove_${WEBSITENAME}_configs.bash
+cp -rp .rm_site remove_${WEBSITENAME}_configs.bash
 
 #add websitename to hosts
 
@@ -314,7 +318,7 @@ then
                     echo -e "${YELLOW}ADD $WEBSITENAME to /etc/hosts, because you are on a localhost!"
                     echo "127.0.0.1   ${WEBSITENAME}" >> /etc/hosts
                 fi
-                echo "sed -i 's/127.0.0.1   ${WEBSITENAME}//g' /etc/hosts" >> ./remove_${WEBSITENAME}_configs.bash
+                echo "sed -i 's/127.0.0.1   ${WEBSITENAME}//g' /etc/hosts" >> remove_${WEBSITENAME}_configs.bash
                 EDITEDHOSTS=true
                 break;;
             [Nn]* )
@@ -357,7 +361,7 @@ while true; do
         echo -e "${GREEN}Activate wisski.ini.${NC}"
         phpenmod -v ${PHPVERSION} wisski
         echo "phpdismod -v ${PHPVERSION} wisski"  >> ./remove_${WEBSITENAME}_configs.bash
-        echo "rm /etc/php/${PHPVERSION}/mods-available/wisski.ini" >> ./remove_${WEBSITENAME}_configs.bash
+        echo "rm /etc/php/${PHPVERSION}/mods-available/wisski.ini" >> remove_${WEBSITENAME}_configs.bash
         break;;
         [Nn]* ) break;;
         * ) echo "Please answer yes or no.";;
@@ -410,8 +414,8 @@ while true; do
             a2ensite ${WEBSITENAME}
             echo -e "${GREEN}Restart apache server${NC}"
             systemctl restart apache2
-            echo "a2dissite ${WEBSITENAME}"  >> ./remove_${WEBSITENAME}_configs.bash
-            echo "rm /etc/apache2/sites-available/${WEBSITENAME}.conf;" >> ./remove_${WEBSITENAME}_configs.bash
+            echo "a2dissite ${WEBSITENAME}"  >> remove_${WEBSITENAME}_configs.bash
+            echo "rm /etc/apache2/sites-available/${WEBSITENAME}.conf" >> remove_${WEBSITENAME}_configs.bash
             break;;
         [Nn]* ) 
             break;;
@@ -650,6 +654,7 @@ while true; do
                 unzip web/libraries/mirador.zip -d web/libraries/
                 break;;
             [Nn]* )
+                echo
                 echo -e "${GREEN}Okay, you can download it later from:"
                 echo -e "https://github.com/jackmoore/colorbox/archive/refs/heads/master.zip"
                 echo -e "and"
@@ -723,6 +728,8 @@ if [[ ! ${LOCALHOST} ]]; then
         esac
     done
 fi
+
+echo "rm -r /var/www/html/${WEBSITENAME}" >> ${CURRENTDIR}/remove_${WEBSITENAME}_configs.bash
 
 echo
 if [[ ${EDITEDHOSTS} ]]; then
