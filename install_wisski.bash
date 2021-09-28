@@ -724,4 +724,5 @@ if [[ ${EDITEDHOSTS} ]]; then
     echo -e "${GREEN}Thats it! You can now visit http://${WEBSITENAME} or and install Drupal!${NC}"
 else
     echo -e "${GREEN}Thats it! You can now visit http://localhost/${WEBSITENAME} or and install Drupal!${NC}"
-exit 0;
+fi
+exit 0
