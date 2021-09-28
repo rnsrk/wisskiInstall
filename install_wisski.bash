@@ -393,7 +393,7 @@ SITECONFIG="<VirtualHost *:80>
     ServerAlias ${WEBSITENAME}
     ErrorLog \"/var/log/apache2/${WEBSITENAME}-error_log\"
     CustomLog \"/var/log/apache2/${WEBSITENAME}-access_log\" common
-        <Directory /var/www/html/$WEBSITENAME/web>
+    <Directory /var/www/html/$WEBSITENAME/web>
         Options FollowSymlinks
         AllowOverride All
         Require all granted
@@ -410,7 +410,7 @@ while true; do
     case $WRITECONFIG in
         [Yy]* ) 
             echo -e "${GREEN}Write config to \"/etc/apache2/sites-available/${WEBSITENAME}\""
-            echo "$SITECONFIG" > /etc/apache2/sites-available/${WEBSITENAME}.conf
+            echo ${SITECONFIG} > /etc/apache2/sites-available/${WEBSITENAME}.conf
             echo -e "${GREEN}Enable site ${WEBSITENAME}${NC}"
             a2ensite ${WEBSITENAME}
             echo -e "${GREEN}Restart apache server${NC}"
@@ -731,6 +731,7 @@ if [[ ! ${LOCALHOST} ]]; then
 fi
 
 echo "rm -r /var/www/html/${WEBSITENAME}" >> ${CURRENTDIR}/remove_${WEBSITENAME}_configs.bash
+echo "systemctl reload apache2" >> ${CURRENTDIR}/remove_${WEBSITENAME}_configs.bash
 
 echo
 if [[ ${EDITEDHOSTS} ]]; then
