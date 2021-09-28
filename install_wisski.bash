@@ -183,7 +183,7 @@ fi
 for REQUIREDPKG in "${DEPENDENCIES[@]}"
 do
     if [[ "$(dpkg-query -W --showformat='${Status}\n' $REQUIREDPKG)" == "install ok installed" ]]; then
-        echo -e "${GREEN}${REQUIREDPKG} is installed."
+        echo -e "${GREEN}${REQUIREDPKG} is installed.${RED}"
         delete=(${REQUIREDPKG})
         for target in "${delete[@]}"; do
           for i in "${!DEPENDENCIES[@]}"; do
@@ -412,9 +412,9 @@ while true; do
             echo -e "${GREEN}Write config to \"/etc/apache2/sites-available/${WEBSITENAME}\""
             echo "${SITECONFIG}" > /etc/apache2/sites-available/${WEBSITENAME}.conf
             echo -e "${GREEN}Enable site ${WEBSITENAME}${NC}"
-            a2ensite ${WEBSITENAME}
+            a2ensite ${WEBSITENAME} &> /dev/null
             echo -e "${GREEN}Restart apache server${NC}"
-            systemctl restart apache2
+            systemctl restart apache2 &> /dev/null
             echo "a2dissite ${WEBSITENAME}"  >> remove_${WEBSITENAME}_configs.bash
             echo "rm /etc/apache2/sites-available/${WEBSITENAME}.conf" >> remove_${WEBSITENAME}_configs.bash
             break;;
