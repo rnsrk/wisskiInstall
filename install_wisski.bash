@@ -352,8 +352,7 @@ then
     echo
     echo -e "${YELLOW}Since, you are on localhost, I try to add \"127.0.0.1   ${WEBSITENAME}\" to /etc/hosts."
     echo -e "Is this okay for you?${NC}"
-    
-     while true; do
+    while true; do
         read -p "(y/n): " SURE
         case $SURE in
             [Yy]* )
@@ -373,7 +372,6 @@ then
             * ) echo "Please answer yes or no.";;
         esac
     done
-    
 fi
 
 echo
