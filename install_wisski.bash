@@ -188,8 +188,6 @@ do
             fi
           done
         done
-    else
-        echo -e "${RED}${REQUIREDPKG} is missing."
     fi
 done
 
@@ -231,8 +229,6 @@ for REQUIREDPKG in "${HELPERS[@]}"; do
             fi
           done
         done
-    else
-        echo -e "${RED}${REQUIREDPKG} is missing."
     fi
 done
 
