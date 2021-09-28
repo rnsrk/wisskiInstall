@@ -716,7 +716,10 @@ while true; do
                 sudo make
             sudo cp src/iipsrv.fcgi /usr/lib/iipimage-server/iipsrv.fcgi
             cd ${DIR}
-
+            systemctl restart apache2 &> /dev/null
+            echo
+            echo -e "${GREEN}Sucessfully intalled IIPImage server."
+            echo -e "You reach him at http://localhost/iipsrv/iipsrv.fcgi${NC}"
             break;;
         [Nn]* )
             echo
