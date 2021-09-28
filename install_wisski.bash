@@ -388,11 +388,11 @@ echo -e "This will create \"/etc/apache2/sites-available/${WEBSITENAME}.conf\".$
 
 SITECONFIG="<VirtualHost *:80>
     ServerAdmin ${SERVERADMINEMAIL}
-    DocumentRoot \"/var/www/html/${WEBSITENAME}/web\"
+    DocumentRoot /var/www/html/${WEBSITENAME}/web
     ServerName www.${WEBSITENAME}
     ServerAlias ${WEBSITENAME}
-    ErrorLog \"/var/log/apache2/${WEBSITENAME}-error_log\"
-    CustomLog \"/var/log/apache2/${WEBSITENAME}-access_log\" common
+    ErrorLog /var/log/apache2/${WEBSITENAME}-error_log
+    CustomLog /var/log/apache2/${WEBSITENAME}-access_log common
     <Directory /var/www/html/$WEBSITENAME/web>
         Options FollowSymlinks
         AllowOverride All
