@@ -14,4 +14,17 @@ fi
 
 echo -e "${RED}Be aware that this script removes the config and webroot files from your system!"
 echo -e "They can't be recovered!"
-echo -e "Use it only if you understand, what this script doing!${NC}"
+echo -e "Use it only if you understand, what this script doing!"
+echo -e "${YELLOW} Do you want to continue and remove your site?${NC}"
+
+while true; do
+    read -p "(y/n): " SURE
+    case ${SURE} in
+        [Yy]* )
+            break;;
+        [Nn]* )
+            exit 0
+            ;;
+        * ) echo "Please answer y[es] or n[o].";;
+    esac
+done

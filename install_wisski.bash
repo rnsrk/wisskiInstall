@@ -647,11 +647,11 @@ while true; do
                 mkdir -p web/libraries
                 ## get colorbox
                 wget https://github.com/jackmoore/colorbox/archive/refs/heads/master.zip -P web/libraries/
-                unzip web/libraries/master.zip -d web/libraries/
+                unzip web/libraries/master.zip -d web/libraries/ &> /dev/null
                 mv web/libraries/colorbox-master web/libraries/colorbox
                 ## get mirador
                 wget http://wisskieu.nasarek.org/sites/default/files/assets/mirador.zip -P web/libraries/
-                unzip web/libraries/mirador.zip -d web/libraries/
+                unzip web/libraries/mirador.zip -d web/libraries/ &> /dev/null
                 break;;
             [Nn]* )
                 echo
