@@ -410,7 +410,7 @@ while true; do
     case $WRITECONFIG in
         [Yy]* ) 
             echo -e "${GREEN}Write config to \"/etc/apache2/sites-available/${WEBSITENAME}\""
-            echo ${SITECONFIG} > /etc/apache2/sites-available/${WEBSITENAME}.conf
+            echo "${SITECONFIG}" > /etc/apache2/sites-available/${WEBSITENAME}.conf
             echo -e "${GREEN}Enable site ${WEBSITENAME}${NC}"
             a2ensite ${WEBSITENAME}
             echo -e "${GREEN}Restart apache server${NC}"
