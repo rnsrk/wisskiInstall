@@ -13,8 +13,7 @@ You have the possibility to tweak your php environment and create a virtual host
 The scripts helps you secure a fresh DBMS installation and create (or keep) your database and database users.
 ### Drupal
 Drupal is installed via composers recommended-project option (where vendor and web directory is seperated).
-The script also download WissKI-parts, and dependencies respectively libraries. The mirador library is a precompiled zip ready to use, but quite big (ca. 200MB).
-Mirador is optional, so skip this if you do not need it. The installation of the colorbox is quite straightforward.
+The script also download WissKI-parts, and dependencies respectively libraries. The installation of the colorbox is quite straightforward. Just some small download. The mirador library is a precompiled zip ready to use and it comes with an IIP Server, so this part is quite intense. Since colorbox is widely used, Mirador is more special, so skip mirador if you do not need it. 
 ### SSL
 If you choose to install in production mode, you have the possibility to enable ssl support. 
 Either you have already certificates, than you can adapt the `example-ssl.conf` or you use certbot to get some from letsencrypt.
