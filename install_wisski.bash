@@ -249,55 +249,6 @@ else
     echo -e "${GREEN}Good, all helpers are installed."
 fi
 
-# add php configuration via wisski.ini
-# Tweak PHP
-
-TWEAKPHP=$'file_uploads = On
-allow_url_fopen = On
-memory_limit = 256M
-upload_max_filesize = 20M
-max_execution_time = 60
-date.timezone = Europe/Berlin
-max_input_nesting_level = 640'
-
-echo
-echo -e "${YELLOW}Do you like to tweak your php?"
-echo -e "${YELLOW}This will add"
-echo
-echo -e "${RED}${TWEAKPHP}"
-echo
-echo -e "${YELLOW}to"
-echo 
-echo -e "${RED}/etc/php/${PHPVERSION}/mods-available/wisski.ini$"
-echo
-echo -e "${YELLOW}and activate it.${NC}"
-echo
-
-while true; do
-    read -p "(y/n): " TWEAK
-    case $TWEAK in
-        [Yy]* ) 
-        echo "$TWEAKPHP" > /etc/php/${PHPVERSION}/mods-available/wisski.ini
-        echo -e "${GREEN}Activate wisski.ini.${NC}"
-        phpenmod -v ${PHPVERSION} wisski
-        break;;
-        [Nn]* ) break;;
-        * ) echo "Please answer yes or no.";;
-    esac
-done
-
-# enable mod-rewrite 
-echo
-echo -e "${GREEN}Enable mod_rewrite for apache2.${NC}"
-echo 
-a2enmod rewrite;
-
-# restart apache
-echo
-echo -e "${GREEN}Restart apache server${NC}"
-systemctl restart apache2
-echo
-
 # configure site
 FINISHED=false
 while [ $FINISHED == false ]
@@ -370,6 +321,60 @@ then
     done
 fi
 
+cp ./.remove-site ./remove_${WEBSITENAME}_configs.bash
+
+# add php configuration via wisski.ini
+# Tweak PHP
+
+TWEAKPHP=$'file_uploads = On
+allow_url_fopen = On
+memory_limit = 256M
+upload_max_filesize = 20M
+max_execution_time = 60
+date.timezone = Europe/Berlin
+max_input_nesting_level = 640'
+
+echo
+echo -e "${YELLOW}Do you like to tweak your php?"
+echo -e "${YELLOW}This will add"
+echo
+echo -e "${RED}${TWEAKPHP}"
+echo
+echo -e "${YELLOW}to"
+echo 
+echo -e "${RED}/etc/php/${PHPVERSION}/mods-available/wisski.ini$"
+echo
+echo -e "${YELLOW}and activate it.${NC}"
+echo 
+
+while true; do
+    read -p "(y/n): " TWEAK
+    case $TWEAK in
+        [Yy]* ) 
+        echo "$TWEAKPHP" > /etc/php/${PHPVERSION}/mods-available/wisski.ini
+        echo -e "${GREEN}Activate wisski.ini.${NC}"
+        phpenmod -v ${PHPVERSION} wisski
+        echo "phpdismod -v ${PHPVERSION} wisski"  >> ./remove_${WEBSITENAME}_configs.bash
+        echo "rm /etc/php/${PHPVERSION}/mods-available/wisski.ini" >> ./remove_${WEBSITENAME}_configs.bash
+        break;;
+        [Nn]* ) break;;
+        * ) echo "Please answer yes or no.";;
+    esac
+done
+
+# enable mod-rewrite 
+echo
+echo -e "${GREEN}Enable mod_rewrite for apache2.${NC}"
+echo 
+a2enmod rewrite &> /dev/null
+
+# restart apache
+echo
+echo -e "${GREEN}Restart apache server${NC}"
+systemctl restart apache2 &> /dev/null
+echo
+
+
 echo
 echo -e "${YELLOW}Do you like to add your site to your apache config?"
 echo -e "This will create \"/etc/apache2/sites-available/${WEBSITENAME}.conf\".${NC}"
@@ -397,12 +402,14 @@ while true; do
     read -p "(y/n): " WRITECONFIG
     case $WRITECONFIG in
         [Yy]* ) 
-            echo -e "${GREEN}Write config to \"/etc/apache2/sites-available/${WEBSITENAME}\"";
-            echo "$SITECONFIG" > /etc/apache2/sites-available/${WEBSITENAME}.conf; 
-            echo -e "${GREEN}Enable site ${WEBSITENAME}${NC}";
-            a2ensite ${WEBSITENAME};
-            echo -e "${GREEN}Restart apache server${NC}";
-            systemctl restart apache2;
+            echo -e "${GREEN}Write config to \"/etc/apache2/sites-available/${WEBSITENAME}\""
+            echo "$SITECONFIG" > /etc/apache2/sites-available/${WEBSITENAME}.conf
+            echo -e "${GREEN}Enable site ${WEBSITENAME}${NC}"
+            a2ensite ${WEBSITENAME}
+            echo -e "${GREEN}Restart apache server${NC}"
+            systemctl restart apache2
+            echo "a2dissite ${WEBSITENAME}"  >> ./remove_${WEBSITENAME}_configs.bash
+            echo "rm /etc/apache2/sites-available/${WEBSITENAME}.conf;" >> ./remove_${WEBSITENAME}_configs.bash
             break;;
         [Nn]* ) 
             break;;
