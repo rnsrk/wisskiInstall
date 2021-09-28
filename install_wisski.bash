@@ -257,6 +257,7 @@ fi
 FINISHED=false
 while [ $FINISHED == false ]
 do
+    echo
     echo -e "${YELLOW}What is the name of your Website (WITHOUT \"https://www.\" etc. like \"example.com\")?"
     echo -e "${YELLOW}It will be used as webroot dir at /var/www/html/ and as your servername.${NC}"
     while [[ -z $WEBSITENAME ]]
@@ -385,7 +386,7 @@ echo
 echo -e "${YELLOW}Do you like to add your site to your apache config?"
 echo -e "This will create \"/etc/apache2/sites-available/${WEBSITENAME}.conf\".${NC}"
 
-SITECONFIG=$'<VirtualHost *:80>
+SITECONFIG="<VirtualHost *:80>
     ServerAdmin ${SERVERADMINEMAIL}
     DocumentRoot \"/var/www/html/${WEBSITENAME}/web\"
     ServerName www.${WEBSITENAME}
@@ -400,9 +401,9 @@ SITECONFIG=$'<VirtualHost *:80>
         RewriteBase /
         RewriteCond %{REQUEST_FILENAME} !-f
         RewriteCond %{REQUEST_FILENAME} !-d
-        RewriteRule ^(.*)$ index.php?q=$1 [L,QSA]
+        RewriteRule ^(.*)$ index.php?q=\$1 [L,QSA]
     </Directory>
-</VirtualHost>'
+</VirtualHost>"
 
 while true; do
     read -p "(y/n): " WRITECONFIG
