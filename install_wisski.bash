@@ -638,40 +638,105 @@ cd /var/www/html/$WEBSITENAME
 
 
 echo
-echo -e "${YELLOW}Do you like to get colorbox and mirador libraries?${NC}"
+echo -e "${YELLOW}Do you like to get colorbox library?${NC}"
 echo
 
 while true; do
-        read -p "(y/n): " INSTALLCOMPOSER
-        case ${INSTALLCOMPOSER} in
-            [Yy]* )
-                mkdir -p web/libraries
-                ## get colorbox
-                wget https://github.com/jackmoore/colorbox/archive/refs/heads/master.zip -P web/libraries/
-                unzip web/libraries/master.zip -d web/libraries/ &> /dev/null
-                mv web/libraries/colorbox-master web/libraries/colorbox
-                ## get mirador
-                wget http://wisskieu.nasarek.org/sites/default/files/assets/mirador.zip -P web/libraries/
-                unzip web/libraries/mirador.zip -d web/libraries/ &> /dev/null
-                break;;
-            [Nn]* )
-                echo
-                echo -e "${GREEN}Okay, you can download it later from:"
-                echo -e "https://github.com/jackmoore/colorbox/archive/refs/heads/master.zip"
-                echo -e "and"
-                echo -e "http://wisskieu.nasarek.org/sites/default/files/assets/mirador.zip${NC}"
-                break;;
-            * ) echo "Please answer y[es] or n[o].";;
-        esac
-    done
+    read -p "(y/n): " INSTALLCOLORBOX
+    case ${INSTALLCOLORBOX} in
+        [Yy]* )
+            mkdir -p web/libraries
+            ## get colorbox
+            wget https://github.com/jackmoore/colorbox/archive/refs/heads/master.zip -P web/libraries/
+            unzip web/libraries/master.zip -d web/libraries/ &> /dev/null
+            mv web/libraries/colorbox-master web/libraries/colorbox
+            break;;
+        [Nn]* )
+            echo
+            echo -e "${GREEN}Okay, you can download it later from:"
+            echo -e "https://github.com/jackmoore/colorbox/archive/refs/heads/master.zip"
+            break;;
+        * ) echo "Please answer y[es] or n[o].";;
+    esac
+done
+
+echo
+echo -e "${YELLOW}Do you like to get mirador library with the IIP Server?${NC}"
+echo
+
+while true; do
+    read -p "(y/n): " INSTALLMIRADOR
+    case ${INSTALLMIRADOR} in
+        [Yy]* )
+            mkdir -p web/libraries
+            ## get mirador
+            wget http://wisskieu.nasarek.org/sites/default/files/assets/mirador.zip -P web/libraries/
+            unzip web/libraries/mirador.zip -d web/libraries/ &> /dev/null
+            sudo apt-get install \
+                    autoconf \
+                    automake \
+                    iipimage-server \
+                    iipimage-doc \
+                    libfreetype6-dev \
+                    libjpeg-dev \
+                    libpng-dev \
+                    libpng16-16 \
+                    libpq-dev \
+                    libtiff-dev \
+                    libtiff5 \
+                    libtool \
+                    imagemagick -y
+
+            # the directory of the script
+            DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+            # the temp directory used, within $DIR
+            WORK_DIR=`mktemp -d -p "$DIR"`
+
+            # check if tmp dir was created
+            if [[ ! "$WORK_DIR" || ! -d "$WORK_DIR" ]]; then
+              echo "Could not create temp dir"
+              exit 1
+            fi
+
+            # deletes the temp directory
+            function cleanup {      
+              rm -rf "$WORK_DIR"
+              echo -e "${GREEN}Deleted temp working directory $WORK_DIR.${NC}"
+            }
+
+            # register the cleanup function to be called on the EXIT signal
+            trap cleanup EXIT
+
+            cd ${WORK_DIR}
+            git clone https://github.com/ruven/iipsrv.git && \
+                cd iipsrv && \
+                sudo ./autogen.sh && \
+                sudo ./configure && \
+                sudo make
+            sudo cp src/iipsrv.fcgi /usr/lib/iipimage-server/iipsrv.fcgi
+            cd ${DIR}
+
+            break;;
+        [Nn]* )
+            echo
+            echo -e "${GREEN}Okay, you can download mirador later from:"
+            echo -e "http://wisskieu.nasarek.org/sites/default/files/assets/mirador.zip"
+            echo -e "and follow the instructions on"
+            echo -e "wisskieu.nasarek.org/installation/default-server-setup"
+            echo -e "to install the IIP server.${NC}"
+            break;;
+        * ) echo "Please answer y[es] or n[o].";;
+    esac
+done
 
 #echo change permissions for webroot to www-data
 
 echo
 echo -e "${GREEN}Change permissions to www-data at \"/var/www/html/$WEBSITENAME\".${NC}"
 echo
-chown -R www-data:www-data ../$WEBSITENAME
-chmod 775 -R ../$WEBSITENAME
+chown -R www-data:www-data /var/www/html/$WEBSITENAME
+chmod 775 -R /var/www/html/$WEBSITENAME
 
 if [[ ! ${LOCALHOST} ]]; then
     echo
