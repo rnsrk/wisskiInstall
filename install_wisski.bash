@@ -292,6 +292,9 @@ do
     done
 done
 
+
+cp ./.remove-site ./remove_${WEBSITENAME}_configs.bash
+
 #add websitename to hosts
 
 if [[ $LOCALHOST ]]
@@ -311,6 +314,7 @@ then
                     echo -e "${YELLOW}ADD $WEBSITENAME to /etc/hosts, because you are on a localhost!"
                     echo "127.0.0.1   ${WEBSITENAME}" >> /etc/hosts
                 fi
+                echo "sed -i 's/127.0.0.1   ${WEBSITENAME}//g' /etc/hosts" >> ./remove_${WEBSITENAME}_configs.bash
                 EDITEDHOSTS=true
                 break;;
             [Nn]* )
@@ -320,8 +324,6 @@ then
         esac
     done
 fi
-
-cp ./.remove-site ./remove_${WEBSITENAME}_configs.bash
 
 # add php configuration via wisski.ini
 # Tweak PHP
