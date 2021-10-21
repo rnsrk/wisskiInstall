@@ -627,7 +627,7 @@ echo
 echo -e "${GREEN}Installing WissKI with some modules (you have to activate them later).${NC}"
 echo
 cd /var/www/html/$WEBSITENAME
-composer require drupal/colorbox drupal/devel drush/drush drupal/imagemagick 'drupal/inline_entity_form:1.x-dev@dev' 'drupal/wisski:^3.0@RC'
+composer require drupal/colorbox drupal/devel drush/drush drupal/imagemagick drupal/image_effects 'drupal/inline_entity_form:1.x-dev@dev' 'drupal/wisski:^3.0@RC'
 cd web/modules/contrib/wisski
 
 echo
@@ -661,7 +661,7 @@ while true; do
 done
 
 echo
-echo -e "${YELLOW}Do you like to get mirador library with the IIP Server?${NC}"
+echo -e "${YELLOW}Do you like to get mirador library with the IIP Image Server?${NC}"
 echo
 
 while true; do
@@ -679,12 +679,16 @@ while true; do
                     iipimage-doc \
                     libfreetype6-dev \
                     libjpeg-dev \
+                    libopenjp2-7 \
+                    libopenjp2-7-dev \
                     libpng-dev \
                     libpng16-16 \
                     libpq-dev \
                     libtiff-dev \
                     libtiff5 \
                     libtool \
+                    libmemcached11 \
+                    libmemcached-dev \
                     imagemagick -y
 
             # the directory of the script
@@ -711,10 +715,10 @@ while true; do
             cd ${WORK_DIR}
             git clone https://github.com/ruven/iipsrv.git && \
                 cd iipsrv && \
-                sudo ./autogen.sh && \
-                sudo ./configure && \
-                sudo make
-            sudo cp src/iipsrv.fcgi /usr/lib/iipimage-server/iipsrv.fcgi
+                ./autogen.sh && \
+                ./configure && \
+                make
+            cp src/iipsrv.fcgi /usr/lib/iipimage-server/iipsrv.fcgi
             cd ${DIR}
             systemctl restart apache2 &> /dev/null
             echo
