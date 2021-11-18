@@ -324,6 +324,7 @@ then
                 break;;
             [Nn]* )
                 echo -e "${GREEN}Okay, to visit your website later on, you have to type http://localhost/${WEBSITENAME}";
+                echo -e "${RED}If you install IIP Image Server , you need http://${WEBSITENAME} as a host or you get cross origin problems!${NC}";
                 break;;
             * ) echo "Please answer yes or no.";;
         esac
@@ -446,155 +447,147 @@ then
 fi
 
 # create database user and database 
-echo
-echo -e "${YELLOW}Create database and user for Drupal. Please note your inputs, they will be needed in a moment."
-CORRECTDATABASE=false 
-CORRECTUSER=false
-FINISHED=false
-while [[ $CORRECTDATABASE == false ]] && [[ $CORRECTUSER == false ]]; do
-    while [[ $FINISHED == false ]]; do
-        echo -e "${YELLOW}Enter name of the Database, you want to create:${NC}"
-        read DB
-        if [[ ! -z "`mysql -qfsBe "SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME='${DB}'" 2>&1`" ]]; then
+echo -e "${YELLOW}Do you want to create a database and a database user?"
+echo -e "${YELLOW}If you have a database and database user, please ensure you know the credentials!"
+
+while true; do
+    read -p "(y/n): " CREATEDBANDDBUSER
+    case $CREATEDBANDDBUSER in
+        [Yy]* ) 
             echo
-            echo -e "${RED}Database already exists!"
-            echo -e "Should I drop it and recreate? Attention: All data will be lost and can not be recovered!${NC}"
-            while true; do
-                read -p "(recreate/keep/rename/abort): " SURE
-                case $SURE in
-                    [recreate]* ) 
-                        mysql -e "DROP DATABASE ${DB};"
+            echo -e "${YELLOW}Create database and user for Drupal. Please note your inputs, they will be needed in a moment."
+            CORRECTDATABASE=false 
+            CORRECTUSER=false
+            FINISHED=false
+            while [[ $CORRECTDATABASE == false ]] && [[ $CORRECTUSER == false ]]; do
+                while [[ $FINISHED == false ]]; do
+                    echo -e "${YELLOW}Enter name of the Database, you want to create:${NC}"
+                    read DB
+                    if [[ ! -z "`mysql -qfsBe "SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME='${DB}'" 2>&1`" ]]; then
+                        echo
+                        echo -e "${RED}Database already exists!"
+                        echo -e "Should I drop it and recreate? Attention: All data will be lost and can not be recovered!${NC}"
+                        while true; do
+                            read -p "(recreate/keep/retry/abort): " SURE
+                            case $SURE in
+                                [recreate]* ) 
+                                    mysql -e "DROP DATABASE ${DB};"
+                                    mysql -e "CREATE DATABASE ${DB} ;"
+                                    echo -e "${GREEN}Recreated database ${DB}."
+                                    FINISHED=true
+                                    break;;
+                                [keep]* ) 
+                                    echo -e "${GREEN}Okay keep old database..."
+                                    FINISHED=true
+                                    break;;
+                                [retry]* )
+                                    echo -e "${GREEN}Okay, then..."
+                                    break;;
+                                [abort]* )
+                                    echo -e "${GREEN}Okay, bye"
+                                    exit;;
+                                * ) echo "Please answer y[es], n[o], rename or abort!";;
+                            esac
+                        done
+                    else
                         mysql -e "CREATE DATABASE ${DB} ;"
-                        echo -e "${GREEN}Recreated database ${DB}."
+                        echo -e "${GREEN}Created database ${DB}."
                         FINISHED=true
-                        break;;
-                    [keep]* ) 
-                        echo -e "${GREEN}Okay keep old database..."
-                        FINISHED=true
-                        break;;
-                    [retry]* )
-                        echo -e "${GREEN}Okay, then..."
-                        break;;
-                    [abort]* )
-                        echo -e "${GREEN}Okay, bye"
-                        exit;;
-                    * ) echo "Please answer y[es], n[o], rename or abort!";;
-                esac
-            done
-        else
-            mysql -e "CREATE DATABASE ${DB} ;"
-            echo -e "${GREEN}Created database ${DB}."
-            FINISHED=true
-            CORRECTDATABASE=true
-        fi
-    done
-    FINISHED=false
-    while [[ $FINISHED == false ]]; do
-        echo
-        echo -e "${YELLOW}Enter name of the user you want to create:${NC}"
-        read USER
-        echo -e "${YELLOW}Enter passwort of that user:${NC}"
-        read USERPW
-        echo
-        echo -e "${GREEN}Database username: ${USER}"
-        echo -e "Database user password: ${USERPW}"
-        echo -e "${YELLOW}Is that correct?${NC}"
-        while true; do
-            read -p "(y/n): " SURE
-            case $SURE in
-                [Yy]* ) 
-                if [[ ! -z "`mysql -qfsBe "SELECT User FROM mysql.user WHERE User = '${USER}'" 2>&1`" ]];
-                then
+                        CORRECTDATABASE=true
+                    fi
+                done
+                FINISHED=false
+                while [[ $FINISHED == false ]]; do
                     echo
-                    echo -e "${RED}User already exists!"
-                    echo -e "Should I drop it and recreate or keep existing user?${NC}"
+                    echo -e "${YELLOW}Enter name of the user you want to create:${NC}"
+                    read USER
+                    echo -e "${YELLOW}Enter passwort of that user:${NC}"
+                    read USERPW
+                    echo
+                    echo -e "${GREEN}Database username: ${USER}"
+                    echo -e "Database user password: ${USERPW}"
+                    echo -e "${YELLOW}Is that correct?${NC}"
                     while true; do
-                        read -p "(recreate/keep): " SURE
+                        read -p "(y/n): " SURE
                         case $SURE in
-                            [recreate]* ) 
-                                mysql -e "DROP USER ${DB}@'localhost';"
+                            [Yy]* ) 
+                            if [[ ! -z "`mysql -qfsBe "SELECT User FROM mysql.user WHERE User = '${USER}'" 2>&1`" ]];
+                            then
+                                echo
+                                echo -e "${RED}User already exists!"
+                                echo -e "Should I drop it and recreate or keep existing user?${NC}"
+                                while true; do
+                                    read -p "(recreate/keep): " SURE
+                                    case $SURE in
+                                        [recreate]* ) 
+                                            mysql -e "DROP USER ${DB}@'localhost';"
+                                            mysql -e "CREATE USER ${DB}@localhost IDENTIFIED BY '${USERPW}';"
+                                            mysql -e "GRANT ALL PRIVILEGES ON ${DB}.* TO '${USER}'@'localhost';"
+                                            mysql -e "FLUSH PRIVILEGES;"
+                                            echo -e "${GREEN}Recreated User ${USER}."
+                                            FINISHED=true
+                                            CORRECTUSER=true
+                                            break;;
+                                        [keep]* ) 
+                                            unset USERPW
+                                            echo
+                                            echo -e "${GREEN}Okay keep existing user."
+                                            while [[ -z ${USERPW} ]]; do
+                                                echo -e "${YELLOW}What is the password of this user?"
+                                                echo -e "${RED}Be sure that the password is correct!${NC}"
+                                                read USERPW
+                                                while true; do
+                                                    echo
+                                                    echo -e "${GREEN}User password is: ${USERPW}"
+                                                    echo -e "${YELLOW}Is this correct?${NC}"
+                                                    read -p "(y/n): " SURE
+                                                    case $SURE in
+                                                        [Yy]* ) 
+                                                            CORRECTUSER=true
+                                                            break;;
+                                                        [Nn]* ) 
+                                                            unset USERPW
+                                                            break;;
+                                                        [abort]* )
+                                                            echo -e "${GREEN}Okay, bye"
+                                                            exit;;
+                                                        * ) echo "Please answer y[es], n[o] or abort!";;
+                                                    esac
+                                                done
+                                            done
+                                            FINISHED=true
+                                            break;;
+                                        * ) echo "Please answer y[es] or keep.";;
+                                    esac
+                                done
+                            else
                                 mysql -e "CREATE USER ${DB}@localhost IDENTIFIED BY '${USERPW}';"
                                 mysql -e "GRANT ALL PRIVILEGES ON ${DB}.* TO '${USER}'@'localhost';"
                                 mysql -e "FLUSH PRIVILEGES;"
-                                echo -e "${GREEN}Recreated User ${USER}."
+                                echo
+                                echo -e "${GREEN}Created User ${USER}."
                                 FINISHED=true
                                 CORRECTUSER=true
+                            fi
                                 break;;
-                            [keep]* ) 
-                                unset USERPW
-                                echo
-                                echo -e "${GREEN}Okay keep existing user."
-                                while [[ -z ${USERPW} ]]; do
-                                    echo -e "${YELLOW}What is the password of this user?"
-                                    echo -e "${RED}Be sure that the password is correct!${NC}"
-                                    read USERPW
-                                    while true; do
-                                        echo
-                                        echo -e "${GREEN}User password is: ${USERPW}"
-                                        echo -e "${YELLOW}Is this correct?${NC}"
-                                        read -p "(y/n): " SURE
-                                        case $SURE in
-                                            [Yy]* ) 
-                                                CORRECTUSER=true
-                                                break;;
-                                            [Nn]* ) 
-                                                unset USERPW
-                                                break;;
-                                            [abort]* )
-                                                echo -e "${GREEN}Okay, bye"
-                                                exit;;
-                                            * ) echo "Please answer y[es], n[o] or abort!";;
-                                        esac
-                                    done
-                                done
-                                FINISHED=true
+                            [Nn]* ) 
+                                echo -e "${GREEN}Okay then..."
                                 break;;
-                            * ) echo "Please answer y[es] or keep.";;
+                            * ) echo -e "${RED}Please answer y[es] or n[o].";;
                         esac
                     done
-                else
-                    mysql -e "CREATE USER ${DB}@localhost IDENTIFIED BY '${USERPW}';"
-                    mysql -e "GRANT ALL PRIVILEGES ON ${DB}.* TO '${USER}'@'localhost';"
-                    mysql -e "FLUSH PRIVILEGES;"
-                    echo
-                    echo -e "${GREEN}Created User ${USER}."
-                    FINISHED=true
-                    CORRECTUSER=true
-                fi
-                    break;;
-                [Nn]* ) 
-                    echo -e "${GREEN}Okay then..."
-                    break;;
-                * ) echo -e "${RED}Please answer y[es] or n[o].";;
-            esac
-        done
-    done    
-done
-
-echo
-echo -e "${GREEN}Created ${DB} database with ${USER}@localhost identified by ${USERPW}."
-sleep 1
-
-# install drupal with drush
-echo
-echo -e "${GREEN}You are ready to install Drupal! It will be installed under /var/www/html/$WEBSITENAME."
-echo -e "${YELLOW}Should I start?${NC}"
-while true; do
-    read -p "(y/n): " INSTALLDRUPAL
-    case $INSTALLDRUPAL in
-        [Yy]* ) 
-            echo -e "${GREEN}Okay, I will start installation!"
+                done    
+            done
+            echo
+            echo -e "${GREEN}Created ${DB} database with ${USER}@localhost identified by ${USERPW}."
+            sleep 1
             break;;
-        [Nn]* )
-            echo -e "${GREEN}Okay bye." 
-            exit;;
+        [Nn]* ) 
+            break;;
         * ) echo "Please answer y[es] or n[o].";;
     esac
 done
 
-
-
-cd /var/www/html/
 
 if ! command -v composer &> /dev/null
 then
@@ -616,26 +609,45 @@ then
     done
 fi
 
+# install drupal with drush
 echo
-echo -e "${RED}Composer will scold you for being root, do not worry, we take care of this later - answer always \"y\".${NC}"
-echo
-composer create-project drupal/recommended-project $WEBSITENAME
-chown -R www-data:www-data $WEBSITENAME
-chmod 775 -R $WEBSITENAME
+echo -e "${GREEN}You are ready to install Drupal! It will be installed under /var/www/html/$WEBSITENAME."
+echo -e "${YELLOW}Should I download and install Drupal?${NC}"
+while true; do
+    read -p "(y/n/skip): " INSTALLDRUPAL
+    case $INSTALLDRUPAL in
+        [Yy]* ) 
+            echo -e "${GREEN}Okay, I will start installation!"
+            cd /var/www/html/
+            echo
+            echo -e "${RED}Composer will scold you for being root, do not worry, we take care of this later - answer always \"y\".${NC}"
+            echo
+            composer create-project drupal/recommended-project $WEBSITENAME
+            chown -R www-data:www-data $WEBSITENAME
+            chmod 775 -R $WEBSITENAME
 
-echo
-echo -e "${GREEN}Installing WissKI with some modules (you have to activate them later).${NC}"
-echo
-cd /var/www/html/$WEBSITENAME
-composer require drupal/colorbox drupal/devel drush/drush drupal/imagemagick drupal/image_effects 'drupal/inline_entity_form:1.x-dev@dev' 'drupal/wisski:^3.0@RC'
-cd web/modules/contrib/wisski
+            echo
+            echo -e "${GREEN}Installing WissKI with some modules (you have to activate them later).${NC}"
+            echo
+            cd /var/www/html/$WEBSITENAME
+            composer require drupal/colorbox drupal/devel drush/drush drupal/imagemagick drupal/image_effects 'drupal/inline_entity_form:1.x-dev@dev' 'drupal/wisski:3.x-dev@dev'
+            cd web/modules/contrib/wisski
 
-echo
-echo -e "${GREEN}Autoload WissKI dependencies.${NC}"
-echo
-composer update
-cd /var/www/html/$WEBSITENAME
-
+            echo
+            echo -e "${GREEN}Autoload WissKI dependencies.${NC}"
+            echo
+            composer update
+            cd /var/www/html/$WEBSITENAME
+            break;;
+        [Nn]* )
+            echo -e "${GREEN}Okay bye." 
+            exit;;
+        [skip]* )
+            echo -e "${GREEN}Okay skipping." 
+            break;;
+        * ) echo "Please answer y[es] or n[o].";;
+    esac
+done
 
 echo
 echo -e "${YELLOW}Do you like to get colorbox library?${NC}"
@@ -661,22 +673,21 @@ while true; do
 done
 
 echo
-echo -e "${YELLOW}Do you like to get mirador library with the IIP Image Server?${NC}"
+echo -e "${YELLOW}Do like to install the IIP Image Server?${NC}"
+echo -e "${YELLOW}This will download and install the IIP Image Server at /fcgi-bin/iipsrv.fcgi,${NC}"
+echo -e "${YELLOW}create a iipsrv configuration file at /etc/apache2/mods-available/iipsrv.conf,${NC}"
+echo -e "${YELLOW}and enable the iipsrv mod.${NC}"
 echo
 
 while true; do
-    read -p "(y/n): " INSTALLMIRADOR
-    case ${INSTALLMIRADOR} in
+    read -p "(y/n): " INSTALLIIPSRV
+    case ${INSTALLIIPSRV} in
         [Yy]* )
-            mkdir -p web/libraries
-            ## get mirador
-            wget http://wisskieu.nasarek.org/sites/default/files/assets/mirador.zip -P web/libraries/
-            unzip web/libraries/mirador.zip -d web/libraries/ &> /dev/null
             sudo apt-get install \
                     autoconf \
                     automake \
-                    iipimage-server \
-                    iipimage-doc \
+                    git \
+                    libapache2-mod-fcgid \
                     libfreetype6-dev \
                     libjpeg-dev \
                     libopenjp2-7 \
@@ -689,7 +700,8 @@ while true; do
                     libtool \
                     libmemcached11 \
                     libmemcached-dev \
-                    imagemagick -y
+                    imagemagick \
+                    pkg-config -y
 
             # the directory of the script
             DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
@@ -718,12 +730,64 @@ while true; do
                 ./autogen.sh && \
                 ./configure && \
                 make
-            cp src/iipsrv.fcgi /usr/lib/iipimage-server/iipsrv.fcgi
+            mkdir -p /fcgi-bin
+            cp src/iipsrv.fcgi /fcgi-bin/iipsrv.fcgi
             cd ${DIR}
+
+            FCGICONFIG=$'<IfModule mod_fcgid.c>
+    ScriptAlias /fcgi-bin/ "/fcgi-bin/"
+    <Location "/fcgi-bin/">
+        AllowOverride None
+        Options None
+        Require all granted
+            <IfModule mod_mime.c>
+            AddHandler fcgid-script .fcgi
+            </IfModule>
+    </Location>
+    # Set our environment variables for the IIP server
+    FcgidInitialEnv VERBOSITY "1"
+    FcgidInitialEnv LOGFILE "/var/log/iipsrv.log"
+    FcgidInitialEnv MAX_IMAGE_CACHE_SIZE "10"
+    FcgidInitialEnv JPEG_QUALITY "90"
+    FcgidInitialEnv MAX_CVT "5000"
+    FcgidInitialEnv MEMCACHED_SERVERS "localhost"
+
+    # Define the idle timeout as unlimited and the number of
+    # processes we want
+    FcgidConnectTimeout 20
+    FcgidIdleTimeout 0
+    FcgidMaxProcessesPerClass 1
+</IfModule>'
+
+            echo "${FCGICONFIG}" > /etc/apache2/mods-available/iipsrv.conf
+            a2enmod iipsrv
             systemctl restart apache2 &> /dev/null
+
             echo
             echo -e "${GREEN}Sucessfully intalled IIPImage server."
-            echo -e "You reach him at http://localhost/iipsrv/iipsrv.fcgi${NC}"
+            echo -e "You reach him at http://$WEBSITENAME/fcgi-bin/iipsrv.fcgi${NC}"
+            break;;
+        [Nn]* )
+            echo
+            echo -e "${GREEN}Okay, but you need an IIP Image Server for Mirador, "
+            echo -e "${GREEN}ensure that you have one running at http://$WEBSITENAME/fcgi-bin/iipsrv.fcgi${NC}"
+            break;;
+        * ) echo "Please answer y[es] or n[o].";;
+    esac
+done
+
+echo
+echo -e "${YELLOW}Do you like to get mirador library with the IIP Image Server?${NC}"
+echo
+
+while true; do
+    read -p "(y/n): " INSTALLMIRADOR
+    case ${INSTALLMIRADOR} in
+        [Yy]* )
+            mkdir -p web/libraries
+            ## get mirador
+            wget http://wisskieu.nasarek.org/sites/default/files/assets/mirador.zip -P web/libraries/
+            unzip web/libraries/mirador.zip -d web/libraries/ &> /dev/null
             break;;
         [Nn]* )
             echo
