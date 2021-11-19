@@ -561,7 +561,7 @@ while true; do
                                     esac
                                 done
                             else
-                                mysql -e "CREATE USER ${DB}@localhost IDENTIFIED BY '${USERPW}';"
+                                mysql -e "CREATE USER ${USER}@localhost IDENTIFIED BY '${USERPW}';"
                                 mysql -e "GRANT ALL PRIVILEGES ON ${DB}.* TO '${USER}'@'localhost';"
                                 mysql -e "FLUSH PRIVILEGES;"
                                 echo
