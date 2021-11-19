@@ -463,7 +463,7 @@ while true; do
                 while [[ $FINISHED == false ]]; do
                     echo -e "${YELLOW}Enter name of the Database, you want to create:${NC}"
                     read DB
-                    if [[ ! -z "`mysql -qfsBe "SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME='${DB}'" &> /dev/null`" ]]; then
+                    if [[ ! -z "`mysql -qfsBe "SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME='${DB}'" 2>&1`" ]]; then
                         echo
                         echo -e "${RED}Database already exists!"
                         echo -e "Should I drop it and recreate? Attention: All data will be lost and can not be recovered!${NC}"
@@ -511,7 +511,7 @@ while true; do
                         read -p "(y/n): " SURE
                         case $SURE in
                             [Yy]* ) 
-                            if [[ ! -z "`mysql -qfsBe "SELECT User FROM mysql.user WHERE User = '${USER}'" &>/dev/null`" ]];
+                            if [[ ! -z "`mysql -qfsBe "SELECT User FROM mysql.user WHERE User = '${USER}'" 2>&1`" ]];
                             then
                                 echo
                                 echo -e "${RED}User already exists!"
@@ -520,8 +520,8 @@ while true; do
                                     read -p "(recreate/keep): " SURE
                                     case $SURE in
                                         [recreate]* ) 
-                                            mysql -e "DROP USER ${DB}@'localhost';"
-                                            mysql -e "CREATE USER ${DB}@localhost IDENTIFIED BY '${USERPW}';"
+                                            mysql -e "DROP USER ${USER}@'localhost';"
+                                            mysql -e "CREATE USER ${USER}@localhost IDENTIFIED BY '${USERPW}';"
                                             mysql -e "GRANT ALL PRIVILEGES ON ${DB}.* TO '${USER}'@'localhost';"
                                             mysql -e "FLUSH PRIVILEGES;"
                                             echo -e "${GREEN}Recreated User ${USER}."
