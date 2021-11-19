@@ -776,7 +776,7 @@ while true; do
 done
 
 echo
-echo -e "${YELLOW}Do you like to get mirador library with the IIP Image Server?${NC}"
+echo -e "${YELLOW}Do you like to get a precompiled Mirador library optimized for WissKI?${NC}"
 echo
 
 while true; do
