@@ -661,6 +661,7 @@ while true; do
             wget https://github.com/jackmoore/colorbox/archive/refs/heads/master.zip -P web/libraries/
             unzip web/libraries/master.zip -d web/libraries/ &> /dev/null
             mv web/libraries/colorbox-master web/libraries/colorbox
+            rm web/libraries/master.zip
             break;;
         [Nn]* )
             echo
@@ -774,6 +775,32 @@ while true; do
         * ) echo "Please answer y[es] or n[o].";;
     esac
 done
+
+echo
+echo -e "${YELLOW}Do you like to get the IIPMOOViewer?${NC}"
+echo
+
+while true; do
+    read -p "(y/n): " INSTALLIIPMOOVIEWER
+    case ${INSTALLIIPMOOVIEWER} in
+        [Yy]* )
+            mkdir -p web/libraries
+            ## get IIPImageViewer
+            wget https://github.com/ruven/iipmooviewer/archive/refs/heads/master.zip -P web/libraries/
+            unzip web/libraries/master.zip -d web/libraries/ &> /dev/null
+            mv web/libraries/colorbox-master web/libraries/colorbox
+            rm web/libraries/master.zip
+            break;;
+        [Nn]* )
+            echo
+            echo -e "${GREEN}Okay, you can download it later from:"
+            echo -e "https://github.com/ruven/iipmooviewer/archive/refs/heads/master.zip"
+            break;;
+        * ) echo "Please answer y[es] or n[o].";;
+    esac
+done
+
+
 
 echo
 echo -e "${YELLOW}Do you like to get a precompiled Mirador library optimized for WissKI?${NC}"
