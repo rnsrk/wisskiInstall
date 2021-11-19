@@ -511,7 +511,7 @@ while true; do
                         read -p "(y/n): " SURE
                         case $SURE in
                             [Yy]* ) 
-                            if [[ ! -z "`mysql -qfsBe "SELECT User FROM mysql.user WHERE User = '${USER}'" 2>&1`" ]];
+                            if [[ ! -z "`mysql -qfsBe "SELECT User FROM mysql.user WHERE User = '${USER}'" &>/dev/null`" ]];
                             then
                                 echo
                                 echo -e "${RED}User already exists!"
