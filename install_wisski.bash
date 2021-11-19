@@ -463,7 +463,7 @@ while true; do
                 while [[ $FINISHED == false ]]; do
                     echo -e "${YELLOW}Enter name of the Database, you want to create:${NC}"
                     read DB
-                    if [[ ! -z "`mysql -qfsBe "SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME='${DB}'" 2>&1`" ]]; then
+                    if [[ ! -z "`mysql -qfsBe "SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME='${DB}'" &> /dev/null`" ]]; then
                         echo
                         echo -e "${RED}Database already exists!"
                         echo -e "Should I drop it and recreate? Attention: All data will be lost and can not be recovered!${NC}"
@@ -599,7 +599,6 @@ then
             [Yy]* )
                 echo -e "${RED}I will install composer at \"/usr/local/bin/composer\"${NC}"
                 php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
-                php -r "if (hash_file('sha384', 'composer-setup.php') === '756890a4488ce9024fc62c56153228907f1545c228516cbf63f885e036d37e9a59d27d63f46af1d4d07ee0f76181c7d3') { echo 'Installer verified'; } else { echo 'Installer corrupt'; unlink('composer-setup.php'); } echo PHP_EOL;"
                 php composer-setup.php --filename=composer --install-dir=/usr/local/bin
                 php -r "unlink('composer-setup.php');"
                 break;;
