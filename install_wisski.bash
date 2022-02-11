@@ -54,16 +54,6 @@ echo -e "${GREEN}I want to check if required LAMP-Stack is installed. You need:"
 echo
 APTS=()
 
-# Apache
-if command -v apache2 &> /dev/null
-then
-    APACHE="$(apache2 -v | grep 'Server version' | cut -d':' -f 2)"
-else
-    APACHE='not installed'
-    APTS+=( "apache2" "libapache2-mod-php" )
-fi
-echo -e "${GREEN}Apache2: ${APACHE}"
-
 # Mariadb
 if command -v mysql &> /dev/null
 then
@@ -144,6 +134,16 @@ then
     done
 fi
 
+# Apache
+if command -v apache2 &> /dev/null
+then
+    APACHE="$(apache2 -v | grep 'Server version' | cut -d':' -f 2)"
+else
+    APACHE='not installed'
+    APTS+=( "apache2" )
+fi
+echo -e "${GREEN}Apache2: ${APACHE}"
+
 if [[ ${APTS[*]} ]]
 then
     echo
@@ -165,7 +165,7 @@ fi
 echo
 echo -e "${GREEN}Checking if dependencies are fulfilled..."
 echo 
-DEPENDENCIES=("libapache2-mod-php"\
+DEPENDENCIES=("libapache2-mod-php${PHPVERSION}"\
     "php${PHPVERSION}-apcu"\
     "php${PHPVERSION}-curl"\
     "php${PHPVERSION}-gd"\
@@ -177,6 +177,10 @@ DEPENDENCIES=("libapache2-mod-php"\
 
 if [[ ! $PHPVERSION == 8* ]]; then
     DEPENDENCIES+=("php${PHPVERSION}-json")
+fi  
+
+if [[$PHPVERSION]]; then
+    update-alternatives --set php /usr/bin/php${PHPVERSION}
 fi  
 
 
@@ -202,7 +206,7 @@ then
         echo -e "${RED}Package(s) ${DEPENDENCIES[*]} is/are missing, should I install it/them?${NC}"
         read -p "(y/n): " INSTALLDEPENDENCIES
         case $INSTALLDEPENDENCIES in
-            [Yy]* ) apt update && apt install ${DEPENDENCIES[*]} -y; break;;
+            [Yy]* ) apt update && apt install ${DEPENDENCIES[*]} -y; a2enmod php${PHPVERSION}; break;;
             [Nn]* ) echo -e "${RED}I need ${DEPENDENCIES[*]} to process, abort."; exit;;
             * ) echo "Please answer y[es] or n[o].";;
         esac
@@ -284,7 +288,6 @@ do
     while true; do
         read -p "(y/n): " SURE
         case $SURE in
-            [Yy]* )
                 export WEBSITENAME;
                 export SERVERADMINEMAIL;
                 FINISHED=true;
