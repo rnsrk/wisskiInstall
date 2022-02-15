@@ -103,26 +103,26 @@ fi
 if [[ ${PHP} == "not installed" ]]
 then
     echo
-    echo -e "${YELLOW}Since php is missing on your system, would you like to install version 8.0?" 
-    echo -e "${RED}The app-repo \"ppa:ondrej/php\" must be added to your sources for this."
-    echo -e "If you do not like to add an external repo, you can stay with php 7.4.${NC}"
+    echo -e "${YELLOW}Since php is missing on your system, would you like to install version 7.4 or 8.0?" 
+    echo -e "${RED}The app-repo \"ppa:ondrej/php\" must be added to your sources for this.${NC}"
     echo
     PS3="I would like to use option... "
-    options=("8.0 from ppa:ondrej/php" "7.4 from default sources" "I don't know, please quit.")
+    options=("8.0" "7.4" "I don't know, please quit.")
     select opt in "${options[@]}"
     do
         case $opt in
-            "8.0 from ppa:ondrej/php")
+            "8.0")
                 APTS+=( "php8.0" )
                 PHPVERSION="8.0"
-                echo -e "${GREEN}Add app-repo \"ppa:ondrej/php\" to your sources.${NC}"
+                echo -e "${GREEN}Will take php8.0.${NC}"
                 add-apt-repository ppa:ondrej/php -y;
                 break
                 ;;
-            "7.4 from default sources")
+            "7.4")
                 APTS+=( "php7.4" )
                 PHPVERSION="7.4"
-                echo -e "${GREEN}Will take php7.4 from default sources.${NC}"
+                echo -e "${GREEN}Will take php7.4.${NC}"
+                add-apt-repository ppa:ondrej/php -y;
                 break
                 ;;
             "I don't know, please quit.")
@@ -165,13 +165,14 @@ fi
 echo
 echo -e "${GREEN}Checking if dependencies are fulfilled..."
 echo 
-DEPENDENCIES=("libapache2-mod-php${PHPVERSION}"\
+DEPENDENCIES=(\
+    "libapache2-mod-php${PHPVERSION}"
     "php${PHPVERSION}-apcu"\
     "php${PHPVERSION}-curl"\
     "php${PHPVERSION}-gd"\
     "php${PHPVERSION}-mbstring"\
     "php${PHPVERSION}-mysql"\
-    "php${PHPVERSION}-xml"
+    "php${PHPVERSION}-xml"\
     "php${PHPVERSION}-zip")
 
 
@@ -179,10 +180,7 @@ if [[ ! $PHPVERSION == 8* ]]; then
     DEPENDENCIES+=("php${PHPVERSION}-json")
 fi  
 
-if [[$PHPVERSION]]; then
-    update-alternatives --set php /usr/bin/php${PHPVERSION}
-fi  
-
+update-alternatives --set php /usr/bin/php${PHPVERSION};
 
 for REQUIREDPKG in "${DEPENDENCIES[@]}"
 do
@@ -288,7 +286,8 @@ do
     while true; do
         read -p "(y/n): " SURE
         case $SURE in
-                export WEBSITENAME;
+            [Yy]* )
+                export WEBSITENAME; 
                 export SERVERADMINEMAIL;
                 FINISHED=true;
                 break;;
