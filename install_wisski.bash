@@ -802,33 +802,6 @@ while true; do
     esac
 done
 
-
-
-echo
-echo -e "${YELLOW}Do you like to get a precompiled Mirador library optimized for WissKI?${NC}"
-echo
-
-while true; do
-    read -p "(y/n): " INSTALLMIRADOR
-    case ${INSTALLMIRADOR} in
-        [Yy]* )
-            mkdir -p web/libraries
-            ## get mirador
-            wget http://wisskieu.nasarek.org/sites/default/files/assets/mirador.zip -P web/libraries/
-            unzip web/libraries/mirador.zip -d web/libraries/ &> /dev/null
-            break;;
-        [Nn]* )
-            echo
-            echo -e "${GREEN}Okay, you can download mirador later from:"
-            echo -e "http://wisskieu.nasarek.org/sites/default/files/assets/mirador.zip"
-            echo -e "and follow the instructions on"
-            echo -e "wisskieu.nasarek.org/installation/default-server-setup"
-            echo -e "to install the IIP server.${NC}"
-            break;;
-        * ) echo "Please answer y[es] or n[o].";;
-    esac
-done
-
 #echo change permissions for webroot to www-data
 
 echo
