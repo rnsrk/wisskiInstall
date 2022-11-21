@@ -338,9 +338,13 @@ fi
 
 TWEAKPHP=$'file_uploads = On
 allow_url_fopen = On
-memory_limit = 256M
+memory_limit = 2560M
 upload_max_filesize = 20M
-max_execution_time = 60
+post_max_size = 20M
+max_execution_time = 360
+max_input_vars = 10000
+max_input_time = 360
+max_file_uploads = 2000
 date.timezone = Europe/Berlin
 max_input_nesting_level = 640'
 
