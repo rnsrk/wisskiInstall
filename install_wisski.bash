@@ -10,7 +10,7 @@ NC='\033[0m'
 CURRENTDIR=$PWD
 
 # Check if executer is root
-if [ "$EUID" -ne 0 ]; then 
+if [ "$EUID" -ne 0 ]; then
     echo -e "${RED}Please run as root: \"sudo ./install_drupal-wisski.bash\""
   exit
 fi
@@ -21,11 +21,11 @@ sleep 3
 
 # Check if installation is for local develepment or production
 # If yes: add website name to /etc/hosts/, see section "add website to /etc/hosts"
-echo -e "${YELLOW}Do you use this script to install WissKI on a local development system" 
+echo -e "${YELLOW}Do you use this script to install WissKI on a local development system"
 echo -e "or on a server for production?"
 echo -e "(Selecting \"for local development\" adds your domain to /etc/hosts) in a later step."
 echo -e "(Selecting \"for production\" opens the possibility to use ssl.)${NC}"
-echo 
+echo
 PS3="I am installing option... "
 options=("for local development." "for production." "I don't know, please quit.")
 select opt in "${options[@]}"
@@ -70,7 +70,7 @@ then
     PHP="$(php -v | grep PHP | head -n 1 | cut -d'(' -f 1)"
     PHP=${PHP:4}
     PHPVERSION=${PHP::3}
-    if [[ ! $PHP == 8* ]]
+    if [[ $PHP < 8.3 ]]
     then
         OLDPHPVERSION=true
         echo ${OLDPHPVERSION}
@@ -85,14 +85,14 @@ if [[ $OLDPHPVERSION ]]
 then
     while true; do
         echo
-        echo -e "${RED}Your php version is lower than 8.0, to you want to install php version 8.0 (this is optional)?"
+        echo -e "${RED}Your php version is lower than 8.2. Do you want to install php version 8.3 (this is optional)?"
         echo -e "${YELLOW}Please note that if you confirm the app-repo \"ppa:ondrej/php\" will be added to your sources.${NC}"
         read -p "(y/n): " CURRENTPHPVERSION
         case $CURRENTPHPVERSION in
-            [Yy]* ) 
+            [Yy]* )
                 sudo a2dismod php${PHPVERSION}
-                PHPVERSION="8.0"; 
-                APTS+=( "php8.0" ); 
+                PHPVERSION="8.3";
+                APTS+=( "php8.3" );
                 add-apt-repository ppa:ondrej/php -y; break;;
             [Nn]* ) break;;
             * ) echo "Please answer y[es] or n[o].";;
@@ -103,25 +103,18 @@ fi
 if [[ ${PHP} == "not installed" ]]
 then
     echo
-    echo -e "${YELLOW}Since php is missing on your system, would you like to install version 7.4 or 8.0?" 
+    echo -e "${YELLOW}Since php is missing on your system, would you like to install version 8.3?"
     echo -e "${RED}The app-repo \"ppa:ondrej/php\" must be added to your sources for this.${NC}"
     echo
     PS3="I would like to use option... "
-    options=("8.0" "7.4" "I don't know, please quit.")
+    options=("8.3" "I don't know, please quit.")
     select opt in "${options[@]}"
     do
         case $opt in
-            "8.0")
-                APTS+=( "php8.0" )
-                PHPVERSION="8.0"
-                echo -e "${GREEN}Will take php8.0.${NC}"
-                add-apt-repository ppa:ondrej/php -y;
-                break
-                ;;
-            "7.4")
-                APTS+=( "php7.4" )
-                PHPVERSION="7.4"
-                echo -e "${GREEN}Will take php7.4.${NC}"
+            "8.3")
+                APTS+=( "php8.3" )
+                PHPVERSION="8.3"
+                echo -e "${GREEN}Will take php8.3.${NC}"
                 add-apt-repository ppa:ondrej/php -y;
                 break
                 ;;
@@ -164,7 +157,7 @@ fi
 
 echo
 echo -e "${GREEN}Checking if dependencies are fulfilled..."
-echo 
+echo
 DEPENDENCIES=(\
     "libapache2-mod-php${PHPVERSION}"
     "php${PHPVERSION}-apcu"\
@@ -173,12 +166,13 @@ DEPENDENCIES=(\
     "php${PHPVERSION}-mbstring"\
     "php${PHPVERSION}-mysql"\
     "php${PHPVERSION}-xml"\
+    "php${PHPVERSION}-xsl"\
     "php${PHPVERSION}-zip")
 
 
 if [[ ! $PHPVERSION == 8* ]]; then
     DEPENDENCIES+=("php${PHPVERSION}-json")
-fi  
+fi
 
 update-alternatives --set php /usr/bin/php${PHPVERSION};
 
@@ -217,7 +211,7 @@ fi
 unset REQUIREDPKG
 echo
 echo -e "${GREEN}Checking if helpers are installed...${NC}"
-echo 
+echo
 HELPERS=(\
     "git" \
     "wget" \
@@ -287,7 +281,7 @@ do
         read -p "(y/n): " SURE
         case $SURE in
             [Yy]* )
-                export WEBSITENAME; 
+                export WEBSITENAME;
                 export SERVERADMINEMAIL;
                 FINISHED=true;
                 break;;
@@ -313,7 +307,7 @@ then
         read -p "(y/n): " SURE
         case $SURE in
             [Yy]* )
-                if grep -q "${WEBSITENAME}" "/etc/hosts"; then 
+                if grep -q "${WEBSITENAME}" "/etc/hosts"; then
                     echo
                     echo -e "${RED}Entry \"127.0.0.1   ${WEBSITENAME}\" already in /etc/hosts"
                 else
@@ -355,16 +349,16 @@ echo
 echo -e "${RED}${TWEAKPHP}"
 echo
 echo -e "${YELLOW}to"
-echo 
+echo
 echo -e "${RED}/etc/php/${PHPVERSION}/mods-available/wisski.ini$"
 echo
 echo -e "${YELLOW}and activate it.${NC}"
-echo 
+echo
 
 while true; do
     read -p "(y/n): " TWEAK
     case $TWEAK in
-        [Yy]* ) 
+        [Yy]* )
         echo "$TWEAKPHP" > /etc/php/${PHPVERSION}/mods-available/wisski.ini
         echo -e "${GREEN}Activate wisski.ini.${NC}"
         phpenmod -v ${PHPVERSION} wisski
@@ -376,10 +370,10 @@ while true; do
     esac
 done
 
-# enable mod-rewrite 
+# enable mod-rewrite
 echo
 echo -e "${GREEN}Enable mod_rewrite for apache2.${NC}"
-echo 
+echo
 a2enmod rewrite &> /dev/null
 
 # restart apache
@@ -415,7 +409,7 @@ SITECONFIG="<VirtualHost *:80>
 while true; do
     read -p "(y/n): " WRITECONFIG
     case $WRITECONFIG in
-        [Yy]* ) 
+        [Yy]* )
             echo -e "${GREEN}Write config to \"/etc/apache2/sites-available/${WEBSITENAME}\""
             echo "${SITECONFIG}" > /etc/apache2/sites-available/${WEBSITENAME}.conf
             echo -e "${GREEN}Enable site ${WEBSITENAME}${NC}"
@@ -425,7 +419,7 @@ while true; do
             echo "a2dissite ${WEBSITENAME}"  >> remove_${WEBSITENAME}_configs.bash
             echo "rm /etc/apache2/sites-available/${WEBSITENAME}.conf" >> remove_${WEBSITENAME}_configs.bash
             break;;
-        [Nn]* ) 
+        [Nn]* )
             break;;
         * ) echo "Please answer y[es] or n[o].";;
     esac
@@ -441,28 +435,28 @@ then
     while true; do
         read -p "(y/n): " SECUREMARIADB
         case $SECUREMARIADB in
-            [Yy]* ) 
+            [Yy]* )
                 echo -e "${GREEN}Please note your credentials!";
                 mysql_secure_installation;
                 break;;
-            [Nn]* ) 
+            [Nn]* )
                 break;;
             * ) echo "Please answer y[es] or n[o].";;
         esac
     done
 fi
 
-# create database user and database 
+# create database user and database
 echo -e "${YELLOW}Do you want to create a database and a database user?"
 echo -e "${YELLOW}If you have a database and database user, please ensure you know the credentials!"
 
 while true; do
     read -p "(y/n): " CREATEDBANDDBUSER
     case $CREATEDBANDDBUSER in
-        [Yy]* ) 
+        [Yy]* )
             echo
             echo -e "${YELLOW}Create database and user for Drupal. Please note your inputs, they will be needed in a moment."
-            CORRECTDATABASE=false 
+            CORRECTDATABASE=false
             CORRECTUSER=false
             FINISHED=false
             while [[ $CORRECTDATABASE == false ]] && [[ $CORRECTUSER == false ]]; do
@@ -476,13 +470,13 @@ while true; do
                         while true; do
                             read -p "(recreate/keep/retry/abort): " SURE
                             case $SURE in
-                                [recreate]* ) 
+                                [recreate]* )
                                     mysql -e "DROP DATABASE ${DB};"
                                     mysql -e "CREATE DATABASE ${DB} ;"
                                     echo -e "${GREEN}Recreated database ${DB}."
                                     FINISHED=true
                                     break;;
-                                [keep]* ) 
+                                [keep]* )
                                     echo -e "${GREEN}Okay keep old database..."
                                     FINISHED=true
                                     break;;
@@ -516,7 +510,7 @@ while true; do
                     while true; do
                         read -p "(y/n): " SURE
                         case $SURE in
-                            [Yy]* ) 
+                            [Yy]* )
                             if [[ ! -z "`mysql -qfsBe "SELECT User FROM mysql.user WHERE User = '${USER}'" 2>&1`" ]];
                             then
                                 echo
@@ -525,7 +519,7 @@ while true; do
                                 while true; do
                                     read -p "(recreate/keep): " SURE
                                     case $SURE in
-                                        [recreate]* ) 
+                                        [recreate]* )
                                             mysql -e "DROP USER ${USER}@'localhost';"
                                             mysql -e "CREATE USER ${USER}@localhost IDENTIFIED BY '${USERPW}';"
                                             mysql -e "GRANT ALL PRIVILEGES ON ${DB}.* TO '${USER}'@'localhost';"
@@ -534,7 +528,7 @@ while true; do
                                             FINISHED=true
                                             CORRECTUSER=true
                                             break;;
-                                        [keep]* ) 
+                                        [keep]* )
                                             unset USERPW
                                             echo
                                             echo -e "${GREEN}Okay keep existing user."
@@ -548,10 +542,10 @@ while true; do
                                                     echo -e "${YELLOW}Is this correct?${NC}"
                                                     read -p "(y/n): " SURE
                                                     case $SURE in
-                                                        [Yy]* ) 
+                                                        [Yy]* )
                                                             CORRECTUSER=true
                                                             break;;
-                                                        [Nn]* ) 
+                                                        [Nn]* )
                                                             unset USERPW
                                                             break;;
                                                         [abort]* )
@@ -576,19 +570,19 @@ while true; do
                                 CORRECTUSER=true
                             fi
                                 break;;
-                            [Nn]* ) 
+                            [Nn]* )
                                 echo -e "${GREEN}Okay then..."
                                 break;;
                             * ) echo -e "${RED}Please answer y[es] or n[o].";;
                         esac
                     done
-                done    
+                done
             done
             echo
             echo -e "${GREEN}Created ${DB} database with ${USER}@localhost identified by ${USERPW}."
             sleep 1
             break;;
-        [Nn]* ) 
+        [Nn]* )
             break;;
         * ) echo "Please answer y[es] or n[o].";;
     esac
@@ -621,7 +615,7 @@ echo -e "${YELLOW}Should I download and install Drupal?${NC}"
 while true; do
     read -p "(y/n/skip): " INSTALLDRUPAL
     case $INSTALLDRUPAL in
-        [Yy]* ) 
+        [Yy]* )
             echo -e "${GREEN}Okay, I will start installation!"
             cd /var/www/html/
             echo
@@ -645,10 +639,10 @@ while true; do
             cd /var/www/html/$WEBSITENAME
             break;;
         [Nn]* )
-            echo -e "${GREEN}Okay bye." 
+            echo -e "${GREEN}Okay bye."
             exit;;
         [skip]* )
-            echo -e "${GREEN}Okay skipping." 
+            echo -e "${GREEN}Okay skipping."
             break;;
         * ) echo "Please answer y[es] or n[o].";;
     esac
@@ -722,7 +716,7 @@ while true; do
             fi
 
             # deletes the temp directory
-            function cleanup {      
+            function cleanup {
               rm -rf "$WORK_DIR"
               echo -e "${GREEN}Deleted temp working directory $WORK_DIR.${NC}"
             }
@@ -816,7 +810,7 @@ chmod 775 -R /var/www/html/$WEBSITENAME
 
 if [[ ! ${LOCALHOST} ]]; then
     echo
-    echo -e "${YELLOW}You are installing WissKI for production, do you like to add https support?" 
+    echo -e "${YELLOW}You are installing WissKI for production, do you like to add https support?"
     echo -e "You can use certbot and letsencrypt for an automaticaly installation and configuration"
     echo -e "of all certificates and Apache config files or"
     echo -e "use your own certificates and configure Apache manually.${NC}"
@@ -843,7 +837,7 @@ if [[ ! ${LOCALHOST} ]]; then
                             ln -s /snap/bin/certbot /usr/bin/certbot
                             sudo certbot --apache
                             break;;
-                        [Nn]* ) 
+                        [Nn]* )
                             echo -e "${GREEN}Okay skipping.";
                             for (( i=0; i<${#options[@]}; i++)); do
                                 printf '%d) %s\n' $((i+1)) "${options[$i]}"
