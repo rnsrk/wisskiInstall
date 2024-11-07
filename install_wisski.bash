@@ -608,7 +608,7 @@ then
     done
 fi
 
-# install drupal with drush
+# install a drupal version with drush
 echo
 echo -e "${GREEN}You are ready to install Drupal! It will be installed under /var/www/html/$WEBSITENAME."
 echo -e "${YELLOW}Should I download and install Drupal?${NC}"
@@ -616,27 +616,40 @@ while true; do
     read -p "(y/n/skip): " INSTALLDRUPAL
     case $INSTALLDRUPAL in
         [Yy]* )
-            echo -e "${GREEN}Okay, I will start installation!"
+            echo -e "${GREEN}Okay, please select the Drupal version to install (10 or 11).${NC}"
+            while true; do
+                read -p "Enter your choice (10/11): " DRUPALVERSION
+                case $DRUPALVERSION in
+                    10)
+                        DRUPALPACKAGE="drupal/recommended-project:^10"
+                        break;;
+                    11)
+                        DRUPALPACKAGE="drupal/recommended-project:^11"
+                        break;;
+                    *)
+                        echo "Invalid choice. Please enter 8, 9, or 10.";;
+                esac
+            done
+
+            echo -e "${GREEN}Okay, I will start installation for Drupal $DRUPALVERSION!"
             cd /var/www/html/
             echo
             echo -e "${RED}Composer will scold you for being root, do not worry, we take care of this later - answer always \"y\".${NC}"
             echo
-            composer create-project drupal/recommended-project $WEBSITENAME
+            composer create-project $DRUPALPACKAGE $WEBSITENAME
             chown -R www-data:www-data $WEBSITENAME
             chmod 775 -R $WEBSITENAME
 
             echo
-            echo -e "${GREEN}Installing WissKI with some modules (you have to activate them later).${NC}"
+            echo -e "${GREEN}Installing WissKI with some modules.${NC}"
+            echo
+            echo
+            echo -e "${GREEN}Set composer minimum stability to 'dev' because we need WissKI 3.x-dev.${NC}"
             echo
             cd /var/www/html/$WEBSITENAME
-            composer require drupal/colorbox drupal/devel drush/drush drupal/imagemagick drupal/image_effects 'drupal/inline_entity_form:1.x-dev@dev' 'drupal/wisski:3.x-dev@dev'
-            cd web/modules/contrib/wisski
-
-            echo
-            echo -e "${GREEN}Autoload WissKI dependencies.${NC}"
-            echo
-            composer update
-            cd /var/www/html/$WEBSITENAME
+            composer config minimum-stability dev
+            composer require "drupal/colorbox:^2" "drupal/devel:^5.3" "drush/drush" "drupal/imagemagick:^4.0" "drupal/image_effects:^4.0@RC" "drupal/inline_entity_form:^3.0@RC" "drupal/wisski:3.x-dev@dev"
+            drush en colorbox wisski
             break;;
         [Nn]* )
             echo -e "${GREEN}Okay bye."
